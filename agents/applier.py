@@ -136,7 +136,8 @@ async def apply_to_job(job: dict, profile: dict, cover_letter: str, config: dict
 
     async with async_playwright() as p:
         browser, context = await make_browser(
-            p, headless=browser_cfg["headless"], slow_mo=browser_cfg["slow_mo"]
+            p, headless=browser_cfg["headless"], slow_mo=browser_cfg["slow_mo"],
+            executable_path=browser_cfg.get("executable_path"),
         )
         await load_cookies(context, cookies_file)
         page = await context.new_page()

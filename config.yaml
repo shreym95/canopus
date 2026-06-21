@@ -44,5 +44,6 @@ db:
   path: /home/shrey/job_agent/db/jobs.db
 
 browser:
-  headless: true
+  headless: false
   slow_mo: 500          # ms between actions, avoids bot detection
+  executable_path: /snap/bin/chromium

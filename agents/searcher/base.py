@@ -67,8 +67,16 @@ def parse_salary_lpa(text: str) -> float | None:
     return None
 
 
-async def make_browser(playwright, headless: bool = True, slow_mo: int = 500):
-    browser = await playwright.chromium.launch(headless=headless, slow_mo=slow_mo)
+async def make_browser(playwright, headless: bool = True, slow_mo: int = 500,
+                       executable_path: str | None = None):
+    launch_kwargs: dict = {
+        "headless": headless,
+        "slow_mo": slow_mo,
+        "args": ["--no-sandbox", "--disable-setuid-sandbox"],
+    }
+    if executable_path:
+        launch_kwargs["executable_path"] = executable_path
+    browser = await playwright.chromium.launch(**launch_kwargs)
     context = await browser.new_context(
         user_agent=(
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "

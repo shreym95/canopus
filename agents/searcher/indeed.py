@@ -26,7 +26,8 @@ async def search_indeed(config: dict, keywords: list[str], max_jobs: int) -> lis
 
     async with async_playwright() as p:
         browser, context = await make_browser(
-            p, headless=browser_cfg["headless"], slow_mo=browser_cfg["slow_mo"]
+            p, headless=browser_cfg["headless"], slow_mo=browser_cfg["slow_mo"],
+            executable_path=browser_cfg.get("executable_path"),
         )
         await load_cookies(context, cfg["cookies_file"])
         page = await context.new_page()
