@@ -11,6 +11,13 @@ _client: OpenAI | None = None
 _provider: str = ""
 
 
+def _reset():
+    """Reset singleton — for use in tests only."""
+    global _client, _provider
+    _client = None
+    _provider = ""
+
+
 def get_client() -> tuple[OpenAI, str]:
     """Returns (client, default_model)."""
     global _client, _provider

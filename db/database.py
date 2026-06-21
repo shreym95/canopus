@@ -70,9 +70,18 @@ def upsert_job(db_path: str, job: dict) -> bool:
         conn.close()
 
 
+_UPDATABLE_COLUMNS = frozenset({
+    "score", "score_reason", "status", "cover_letter", "applied_at",
+    "salary_text", "salary_lpa", "description",
+})
+
+
 def update_job(db_path: str, source: str, job_id: str, **fields):
     if not fields:
         return
+    unknown = set(fields) - _UPDATABLE_COLUMNS
+    if unknown:
+        raise ValueError(f"update_job: disallowed column(s): {unknown}")
     set_clause = ", ".join(f"{k} = ?" for k in fields)
     vals = list(fields.values()) + [source, job_id]
     conn = get_conn(db_path)

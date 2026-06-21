@@ -4,6 +4,36 @@ from pathlib import Path
 from playwright.async_api import async_playwright, BrowserContext, Page
 
 
+_VALID_SAMESITE = ("Strict", "Lax", "None")
+
+
+def _parse_cookies(raw: list) -> list[dict]:
+    """Validate and normalise raw cookie list from JSON file."""
+    if not isinstance(raw, list):
+        raise ValueError("Cookie file must contain a JSON array")
+    cleaned = []
+    for i, c in enumerate(raw):
+        if not isinstance(c, dict):
+            raise ValueError(f"Cookie entry {i} is not an object")
+        name = c.get("name")
+        value = c.get("value")
+        if not isinstance(name, str) or not name:
+            raise ValueError(f"Cookie entry {i} missing 'name'")
+        if not isinstance(value, str):
+            raise ValueError(f"Cookie entry {i} missing 'value'")
+        same_site = c.get("sameSite", "Lax")
+        cleaned.append({
+            "name":     name,
+            "value":    value,
+            "domain":   str(c.get("domain", "")),
+            "path":     str(c.get("path", "/")),
+            "secure":   bool(c.get("secure", False)),
+            "httpOnly": bool(c.get("httpOnly", False)),
+            "sameSite": same_site if same_site in _VALID_SAMESITE else "Lax",
+        })
+    return cleaned
+
+
 async def load_cookies(context: BrowserContext, cookies_file: str):
     path = Path(cookies_file)
     if not path.exists():
@@ -12,19 +42,8 @@ async def load_cookies(context: BrowserContext, cookies_file: str):
             "Export cookies from your browser using 'EditThisCookie' or similar extension as JSON."
         )
     with open(path) as f:
-        cookies = json.load(f)
-    # Playwright expects list of dicts with specific keys
-    cleaned = []
-    for c in cookies:
-        cleaned.append({
-            "name":     c["name"],
-            "value":    c["value"],
-            "domain":   c.get("domain", ""),
-            "path":     c.get("path", "/"),
-            "secure":   c.get("secure", False),
-            "httpOnly": c.get("httpOnly", False),
-            "sameSite": c.get("sameSite", "Lax") if c.get("sameSite") in ("Strict","Lax","None") else "Lax",
-        })
+        raw = json.load(f)
+    cleaned = _parse_cookies(raw)
     await context.add_cookies(cleaned)
 
 
@@ -33,12 +52,16 @@ def parse_salary_lpa(text: str) -> float | None:
     if not text:
         return None
     text = text.lower().replace(",", "")
-    # match patterns like "35 lpa", "35-50 lpa", "35l", "35 lakhs"
+    # range like "35-50 lpa" or "1.5–3 lpa" — take lower bound
+    m = re.search(r"(\d+(?:\.\d+)?)\s*[-–]\s*\d+(?:\.\d+)?\s*(?:lpa|l\b|lakh)", text)
+    if m:
+        return float(m.group(1))
+    # single value like "35 lpa", "35l", "40 lakhs"
     m = re.search(r"(\d+(?:\.\d+)?)\s*(?:lpa|l\b|lakh)", text)
     if m:
         return float(m.group(1))
-    # match "35-50" range — take lower bound
-    m = re.search(r"(\d+)\s*[-–]\s*\d+", text)
+    # bare range with no unit like "35-50" — take lower bound
+    m = re.search(r"(\d+(?:\.\d+)?)\s*[-–]\s*\d+", text)
     if m:
         return float(m.group(1))
     return None
