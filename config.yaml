@@ -1,0 +1,48 @@
+profile:
+  resume_path: /home/shrey/Shrey/Shrey_Marwaha_Senior_DE_2026.pdf
+  profile_path: /home/shrey/job_agent/profile.json
+
+search:
+  keywords:
+    - Senior Data Engineer
+    - Azure Data Engineer
+    - Databricks Data Engineer
+    - Data Engineer PySpark
+    - Big Data Engineer
+  locations:
+    - India
+    - Remote
+  work_modes:
+    - remote
+    - hybrid
+    - onsite
+  salary_floor_lpa: 35
+  max_jobs_per_run: 50
+
+sources:
+  linkedin:
+    enabled: true
+    cookies_file: /home/shrey/job_agent/cookies/linkedin.json
+    easy_apply_only: false
+  indeed:
+    enabled: true
+    cookies_file: /home/shrey/job_agent/cookies/indeed.json
+  naukri:
+    enabled: true
+    cookies_file: /home/shrey/job_agent/cookies/naukri.json
+
+ranker:
+  model: grok-3-mini    # fast + cheap, xAI free tier
+  min_score: 6          # 1-10, jobs below this are auto-rejected
+  top_n: 20             # show top N in review UI
+
+cover_letter:
+  model: grok-3-mini
+  max_words: 250
+
+db:
+  path: /home/shrey/job_agent/db/jobs.db
+
+browser:
+  headless: true
+  slow_mo: 500          # ms between actions, avoids bot detection

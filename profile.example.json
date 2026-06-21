@@ -1,0 +1,50 @@
+{
+  "name": "Your Name",
+  "email": "you@example.com",
+  "phone": "+91 XXXXXXXXXX",
+  "location": "City, India",
+  "linkedin": "linkedin.com/in/your-profile",
+  "years_experience": 8,
+  "current_title": "Senior Data Engineer",
+  "current_company": "Current Company",
+  "summary": "Brief professional summary.",
+  "target_roles": [
+    "Senior Data Engineer",
+    "Azure Data Engineer"
+  ],
+  "work_preferences": {
+    "modes": ["remote", "hybrid", "onsite"],
+    "locations": ["India", "Remote"],
+    "salary_floor_lpa": 35,
+    "notice_period_days": 60
+  },
+  "skills": {
+    "core": ["PySpark", "SQL", "Python", "Azure Data Factory", "Databricks"],
+    "platforms": ["Microsoft Azure", "Airflow", "Hadoop"],
+    "practices": ["ETL/ELT Development", "Pipeline Architecture"],
+    "bi_tools": ["Power BI"],
+    "databases": ["RDBMS"],
+    "ai_tools": []
+  },
+  "experience": [
+    {
+      "title": "Senior Data Engineer",
+      "company": "Company Name",
+      "start": "2023-04",
+      "end": null,
+      "highlights": [
+        "Key achievement 1",
+        "Key achievement 2"
+      ]
+    }
+  ],
+  "certifications": [
+    "Microsoft Certified: Azure Data Engineer Associate (DP-203)"
+  ],
+  "education": {
+    "degree": "B.Tech – Computer Science",
+    "institution": "University Name",
+    "year": "2017"
+  },
+  "awards": []
+}

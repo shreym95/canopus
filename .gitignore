@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.pyo
+
+# secrets & personal data
+.env
+profile.json
+db/jobs.db
+cookies/*.json
+
+logs/
+*.log
