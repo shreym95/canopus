@@ -7,6 +7,7 @@ search:
     - Senior Data Engineer
     - Lead Data Engineer
     - Azure Data Engineer
+    - Staff Data Engineer
   profiles:
     - location: "Bengaluru, Karnataka, India"
       work_modes: [hybrid, onsite]
@@ -30,7 +31,7 @@ sources:
 
 ranker:
   model: grok-3-mini    # fast + cheap, xAI free tier
-  min_score: 6          # 1-10, jobs below this are auto-rejected
+  min_score: 7          # 1-10, jobs below this are auto-rejected
   top_n: 20             # show top N in review UI
 
 cover_letter:

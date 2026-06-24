@@ -215,20 +215,63 @@ async def main():
     parser.add_argument("--rank",    action="store_true", help="Rank found jobs via LLM")
     parser.add_argument("--review",  action="store_true", help="Review ranked jobs (interactive)")
     parser.add_argument("--apply",        action="store_true", help="Apply to approved jobs")
-    parser.add_argument("--open-manual",  action="store_true", help="Open manual ATS jobs in browser, 5 at a time")
-    parser.add_argument("--all",          action="store_true", help="Run full pipeline")
+    parser.add_argument("--open-manual",  action="store_true", help="Open job board HTML in browser")
+    parser.add_argument("--pipeline",     action="store_true", help="search → rank → review → job board (no apply)")
+    parser.add_argument("--fresh",        action="store_true", help="Wipe DB before run (use with --pipeline)")
+    parser.add_argument("--all",          action="store_true", help="Run full pipeline including apply")
     parser.add_argument("--config",  default="config.yaml", help="Config file path")
     args = parser.parse_args()
 
-    if not any([args.search, args.rank, args.review, args.apply, args.open_manual, args.all]):
+    if not any([args.search, args.rank, args.review, args.apply,
+                args.open_manual, args.pipeline, args.all]):
         parser.print_help()
         sys.exit(0)
 
     config = load_config(args.config)
     profile = load_profile(config["profile"]["profile_path"])
+
+    if args.fresh and (args.pipeline or args.all):
+        db_path = config["db"]["path"]
+        Path(db_path).unlink(missing_ok=True)
+        console.print("[yellow]DB cleared — clean slate[/]\n")
+
     init_db(config["db"]["path"])
 
     console.print(f"\n[bold cyan]Job Agent — {datetime.now().strftime('%Y-%m-%d %H:%M')}[/]\n")
+
+    if args.pipeline:
+        # search
+        jobs = await run_search(config)
+        new = save_jobs(jobs, config)
+        console.print(f"[green]Saved {new} new jobs to DB[/]")
+        # rank
+        run_ranking(config, profile)
+        # review
+        jobs_to_review = get_jobs_for_review(
+            config["db"]["path"],
+            config["ranker"]["min_score"],
+            config["ranker"]["top_n"],
+        )
+        approved, blacklisted = run_review(jobs_to_review)
+        db_path = config["db"]["path"]
+        for job in approved:
+            update_job(db_path, job["source"], job["job_id"], status="approved")
+        for company in blacklisted:
+            add_blacklist(db_path, "company", company)
+            import sqlite3
+            conn = sqlite3.connect(db_path)
+            conn.execute(
+                "UPDATE jobs SET status='rejected' WHERE lower(company)=lower(?) AND status != 'applied'",
+                (company,)
+            )
+            conn.commit()
+            conn.close()
+        if approved:
+            run_cover_letters(approved, profile, config)
+        # open job board
+        run_open_manual(config, profile=profile)
+        print_stats(config)
+        return
 
     if args.search or args.all:
         jobs = await run_search(config)
