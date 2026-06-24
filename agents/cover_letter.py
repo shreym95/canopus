@@ -29,6 +29,7 @@ def generate_cover_letter(job: dict, profile: dict, model: str = "", max_words: 
         "Led 6-member team managing 5-10TB payments data pipelines",
         "Built PySpark data quality framework adopted across EU markets",
         "Early AI adoption driving 20% productivity gain",
+        "Worked on migrating legacy Synapse pipelines to Databricks, improving performance, discoverability, and maintainability",
     ])
 
     jd_excerpt = (job.get("description") or "")[:2000]

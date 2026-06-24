@@ -60,6 +60,12 @@ Cookie files required in `cookies/` before `--search` will work. See `cookies/HO
 - `browser.slow_mo`: increase if sites flag bot behaviour
 - `search.max_jobs_per_run`: split evenly across 3 sources (÷3 each)
 
+## Git workflow
+
+- After every major bug fix confirmed by Shrey, commit automatically without asking
+- Commit message: max 10-20 words, technical, no fluff — e.g. `fix: LinkedIn title fallback via page title`
+- No `Co-Authored-By` line in commits
+
 ## LLM provider
 
 Currently using **Groq** (`GROQ_API_KEY` in `.env`) with model `llama-3.3-70b-versatile` (auto-selected by `llm_client.py`). The `model` field in `config.yaml` under `ranker`/`cover_letter` is passed through but overridden by the provider's default model in `llm_client.py` — to force a specific model, edit `_provider` default in `llm_client.get_client()`.

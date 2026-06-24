@@ -44,7 +44,7 @@ async def run_search(config: dict) -> list[dict]:
         console.print("[cyan]→ Searching LinkedIn...[/]")
         from agents.searcher.linkedin import search_linkedin
         try:
-            jobs = await search_linkedin(config, keywords, max_jobs // 3)
+            jobs = await search_linkedin(config, keywords, max_jobs)
             console.print(f"  [green]LinkedIn: {len(jobs)} jobs found[/]")
             all_jobs.extend(jobs)
         except Exception as e:
@@ -54,7 +54,7 @@ async def run_search(config: dict) -> list[dict]:
         console.print("[cyan]→ Searching Indeed...[/]")
         from agents.searcher.indeed import search_indeed
         try:
-            jobs = await search_indeed(config, keywords, max_jobs // 3)
+            jobs = await search_indeed(config, keywords, max_jobs)
             console.print(f"  [green]Indeed: {len(jobs)} jobs found[/]")
             all_jobs.extend(jobs)
         except Exception as e:
@@ -64,7 +64,7 @@ async def run_search(config: dict) -> list[dict]:
         console.print("[cyan]→ Searching Naukri...[/]")
         from agents.searcher.naukri import search_naukri
         try:
-            jobs = await search_naukri(config, keywords, max_jobs // 3)
+            jobs = await search_naukri(config, keywords, max_jobs)
             console.print(f"  [green]Naukri: {len(jobs)} jobs found[/]")
             all_jobs.extend(jobs)
         except Exception as e:
@@ -73,13 +73,41 @@ async def run_search(config: dict) -> list[dict]:
     return all_jobs
 
 
+_TITLE_BLOCKLIST = {
+    "software engineer", "sre", "site reliability", "devops", "frontend",
+    "backend engineer", "full stack", "fullstack", "mobile", "ios", "android",
+    "power bi developer", "bi developer", "compiler", "ml engineer",
+    "machine learning engineer", "ai engineer", "product manager",
+    "scrum master", "qa engineer", "test engineer", "security engineer",
+}
+
+
+def _title_relevant(title: str) -> bool:
+    """Return False if title clearly matches a non-DE role."""
+    if not title:
+        return True  # no title yet — let ranker decide
+    t = title.lower()
+    # must contain at least one DE signal
+    de_signals = ["data engineer", "data engineering", "etl", "pipeline",
+                  "databricks", "spark", "azure data", "lead data", "staff data"]
+    if any(s in t for s in de_signals):
+        return True
+    # block clear non-DE titles
+    if any(s in t for s in _TITLE_BLOCKLIST):
+        return False
+    return True  # unknown — keep, ranker will score low
+
+
 def save_jobs(jobs: list[dict], config: dict) -> int:
     db_path = config["db"]["path"]
     salary_floor = config["search"]["salary_floor_lpa"]
     new_count = 0
+    skipped_title = 0
     for job in jobs:
-        # skip if salary known and below floor
         if job.get("salary_lpa") and job["salary_lpa"] < salary_floor:
+            continue
+        if not _title_relevant(job.get("title", "")):
+            skipped_title += 1
             continue
         job.setdefault("description", "")
         job.setdefault("salary_text", "")
@@ -87,6 +115,8 @@ def save_jobs(jobs: list[dict], config: dict) -> int:
         job.setdefault("posted_date", "")
         if upsert_job(db_path, job):
             new_count += 1
+    if skipped_title:
+        console.print(f"  [dim]Skipped {skipped_title} jobs with irrelevant titles[/]")
     return new_count
 
 

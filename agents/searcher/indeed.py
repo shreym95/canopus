@@ -1,7 +1,7 @@
 import asyncio
 import re
 from urllib.parse import urlencode
-from playwright.async_api import Page
+from playwright.async_api import async_playwright, Page
 from .base import load_cookies, make_browser, parse_salary_lpa
 
 BASE_URL = "https://in.indeed.com"
@@ -32,9 +32,17 @@ async def search_indeed(config: dict, keywords: list[str], max_jobs: int) -> lis
         await load_cookies(context, cfg["cookies_file"])
         page = await context.new_page()
 
+        profiles = config["search"]["profiles"]
         for keyword in keywords:
-            for location in ["India", "Remote"]:
-                for mode in ["remote", "hybrid", "onsite"]:
+            if len(jobs) >= max_jobs:
+                break
+            for profile in profiles:
+                if len(jobs) >= max_jobs:
+                    break
+                location = "Remote" if profile.get("geo_id") else "Bengaluru, Karnataka, India"
+                for mode in profile["work_modes"]:
+                    if len(jobs) >= max_jobs:
+                        break
                     url = build_search_url(keyword, location, mode)
                     try:
                         await page.goto(url, timeout=20000, wait_until="domcontentloaded")

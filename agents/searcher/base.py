@@ -69,6 +69,7 @@ def parse_salary_lpa(text: str) -> float | None:
 
 async def make_browser(playwright, headless: bool = True, slow_mo: int = 500,
                        executable_path: str | None = None):
+    """Ephemeral browser + context. Use make_persistent_context for sites that log out."""
     launch_kwargs: dict = {
         "headless": headless,
         "slow_mo": slow_mo,
@@ -86,3 +87,26 @@ async def make_browser(playwright, headless: bool = True, slow_mo: int = 500,
         viewport={"width": 1280, "height": 800},
     )
     return browser, context
+
+
+async def make_persistent_context(playwright, profile_dir: str,
+                                   headless: bool = True, slow_mo: int = 500,
+                                   executable_path: str | None = None):
+    """
+    Persistent browser context backed by a real profile directory.
+    Session cookies, localStorage, and login state survive between runs.
+    First run with a new profile_dir: browser opens so user can log in manually.
+    Subsequent runs: already authenticated.
+    Returns context only (no separate browser object — they're fused in persistent mode).
+    """
+    Path(profile_dir).mkdir(parents=True, exist_ok=True)
+    launch_kwargs: dict = {
+        "headless": headless,
+        "slow_mo": slow_mo,
+        "args": ["--no-sandbox", "--disable-setuid-sandbox"],
+        "viewport": {"width": 1280, "height": 800},
+    }
+    if executable_path:
+        launch_kwargs["executable_path"] = executable_path
+    context = await playwright.chromium.launch_persistent_context(profile_dir, **launch_kwargs)
+    return context

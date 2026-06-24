@@ -5,30 +5,27 @@ profile:
 search:
   keywords:
     - Senior Data Engineer
+    - Lead Data Engineer
     - Azure Data Engineer
-    - Databricks Data Engineer
-    - Data Engineer PySpark
-    - Big Data Engineer
-  locations:
-    - India
-    - Remote
-  work_modes:
-    - remote
-    - hybrid
-    - onsite
+  profiles:
+    - location: "Bengaluru, Karnataka, India"
+      work_modes: [hybrid, onsite]
+    - location: "Worldwide"
+      geo_id: "92000000"       # LinkedIn's special geo ID for worldwide remote
+      work_modes: [remote]
   salary_floor_lpa: 35
-  max_jobs_per_run: 50
+  max_jobs_per_run: 30
 
 sources:
   linkedin:
     enabled: true
-    cookies_file: /home/shrey/job_agent/cookies/linkedin.json
+    profile_dir: /home/shrey/job_agent/browser_profiles/linkedin
     easy_apply_only: false
   indeed:
-    enabled: true
+    enabled: false
     cookies_file: /home/shrey/job_agent/cookies/indeed.json
   naukri:
-    enabled: true
+    enabled: false
     cookies_file: /home/shrey/job_agent/cookies/naukri.json
 
 ranker:
