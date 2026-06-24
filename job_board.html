@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Job Board · 6 to apply</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #080c14;
+    --surface:   #0f1623;
+    --surface2:  #161d2e;
+    --border:    #1e2a40;
+    --text:      #e4eaf4;
+    --muted:     #5a6a84;
+    --accent:    #3b82f6;
+    --accent-hi: #60a5fa;
+    --green:     #22c55e;
+    --amber:     #f59e0b;
+    --red:       #ef4444;
+    --radius:    14px;
+    --radius-sm: 8px;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* ── top bar ── */
+  .topbar {
+    background: linear-gradient(135deg, #0d1526 0%, #101828 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 18px 32px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(12px);
+  }
+  .topbar-logo {
+    font-size: 1.1rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent-hi), #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.02em;
+  }
+  .topbar-sep { color: var(--border); }
+  .topbar-count {
+    font-size: 0.82rem;
+    color: var(--muted);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+
+  /* ── layout ── */
+  .layout {
+    display: flex;
+    align-items: flex-start;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 28px 24px;
+    gap: 24px;
+  }
+
+  /* ── sidebar ── */
+  .sidebar {
+    width: 340px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 73px;
+    max-height: calc(100vh - 97px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+  .sidebar::-webkit-scrollbar { width: 4px; }
+  .sidebar::-webkit-scrollbar-track { background: transparent; }
+  .sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  .sidebar-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  .section-heading {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--muted);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .section-icon { font-size: 0.85rem; }
+
+  .field { margin-bottom: 10px; }
+  .field:last-child { margin-bottom: 0; }
+  .field-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 3px;
+  }
+  .field-label {
+    font-size: 0.7rem;
+    color: var(--muted);
+    font-weight: 500;
+  }
+  .field-value {
+    font-size: 0.82rem;
+    color: var(--text);
+    line-height: 1.55;
+    white-space: pre-wrap;
+    word-break: break-word;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 7px 10px;
+  }
+  .field-single .field-value {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .copy-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: var(--muted);
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 2px 8px;
+    cursor: pointer;
+    transition: all .15s;
+    font-family: inherit;
+  }
+  .copy-btn:hover { color: var(--accent-hi); border-color: var(--accent); }
+  .copy-btn.copied { color: var(--green); border-color: var(--green); }
+
+  /* ── main ── */
+  .main { flex: 1; min-width: 0; }
+
+  .page-heading {
+    margin-bottom: 20px;
+  }
+  .page-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .page-sub {
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+
+  /* ── cards ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    margin-bottom: 14px;
+    transition: border-color .2s, transform .15s;
+  }
+  .card:hover {
+    border-color: #2a3a5c;
+    transform: translateY(-1px);
+  }
+
+  .card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .card-left { display: flex; align-items: flex-start; gap: 12px; flex: 1; min-width: 0; }
+  .card-rank {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--muted);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 3px 7px;
+    flex-shrink: 0;
+    margin-top: 3px;
+    letter-spacing: .03em;
+  }
+  .card-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 5px;
+    line-height: 1.3;
+  }
+  .card-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: 0.8rem;
+  }
+  .card-company { color: var(--accent-hi); font-weight: 500; }
+  .card-dot { color: var(--border); }
+  .card-location { color: var(--muted); }
+
+  .chip {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+    letter-spacing: .02em;
+  }
+  .chip-mode {
+    background: rgba(59,130,246,.12);
+    color: var(--accent-hi);
+    border: 1px solid rgba(59,130,246,.25);
+  }
+
+  .score-badge {
+    display: flex;
+    align-items: baseline;
+    gap: 1px;
+    padding: 6px 12px;
+    border-radius: 10px;
+    flex-shrink: 0;
+    border: 1px solid transparent;
+  }
+  .score-num { font-size: 1.15rem; font-weight: 700; }
+  .score-den { font-size: 0.72rem; font-weight: 500; opacity: .7; }
+  .score-green { color: var(--green); border-color: rgba(34,197,94,.2); }
+  .score-amber { color: var(--amber); border-color: rgba(245,158,11,.2); }
+  .score-red   { color: var(--red);   border-color: rgba(239,68,68,.2); }
+
+  .card-actions { margin-bottom: 14px; }
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: linear-gradient(135deg, var(--accent), #6366f1);
+    color: #fff;
+    text-decoration: none;
+    padding: 9px 20px;
+    border-radius: 9px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    font-family: inherit;
+    transition: opacity .15s, transform .1s;
+    border: none;
+    cursor: pointer;
+  }
+  .btn-primary:hover { opacity: .88; transform: translateY(-1px); }
+
+  /* ── cover letter ── */
+  .cl-details { border-top: 1px solid var(--border); padding-top: 14px; }
+  .cl-details summary {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--muted);
+    list-style: none;
+    user-select: none;
+    transition: color .15s;
+  }
+  .cl-details summary:hover { color: var(--text); }
+  .cl-details[open] summary { color: var(--accent-hi); margin-bottom: 12px; }
+
+  .cl-body { position: relative; }
+  .cl-copy-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: var(--muted);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 10px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all .15s;
+  }
+  .cl-copy-btn:hover { color: var(--accent-hi); border-color: var(--accent); }
+  .cl-copy-btn.copied { color: var(--green); border-color: var(--green); }
+
+  pre {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    padding-right: 90px;
+    font-size: 0.82rem;
+    line-height: 1.65;
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: #c8d3e8;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="topbar-logo">⚡ Job Agent</span>
+  <span class="topbar-sep">·</span>
+  <span class="topbar-count">6 jobs to apply</span>
+</div>
+
+<div class="layout">
+  <div class="sidebar">
+    <div class="sidebar-section">
+              <div class="section-heading"><span class="section-icon">👤</span>Contact</div>
+              <div class="field field-single">
+              <div class="field-top">
+                <span class="field-label">Full Name</span>
+                <button class="copy-btn" id="btn-f1" onclick="copyField('f1')">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  Copy
+                </button>
+              </div>
+              <div class="field-value" id="f1">Shrey Marwaha</div>
+            </div><div class="field field-single">
+              <div class="field-top">
+                <span class="field-label">Email</span>
+                <button class="copy-btn" id="btn-f2" onclick="copyField('f2')">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  Copy
+                </button>
+              </div>
+              <div class="field-value" id="f2">shrym.95@gmail.com</div>
+            </div><div class="field field-single">
+              <div class="field-top">
+                <span class="field-label">Phone</span>
+                <button class="copy-btn" id="btn-f3" onclick="copyField('f3')">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  Copy
+                </button>
+              </div>
+              <div class="field-value" id="f3">+91 9999473273</div>
+            </div><div class="field field-single">
+              <div class="field-top">
+                <span class="field-label">Location</span>
+                <button class="copy-btn" id="btn-f4" onclick="copyField('f4')">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  Copy
+                </button>
+              </div>
+              <div class="field-value" id="f4">New Delhi, India</div>
+            </div>
+            </div><div class="sidebar-section">
+              <div class="section-heading"><span class="section-icon">🔗</span>Links</div>
+              <div class="field field-single">
+              <div class="field-top">
+                <span class="field-label">LinkedIn</span>
+                <button class="copy-btn" id="btn-f5" onclick="copyField('f5')">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  Copy
+                </button>
+              </div>
+              <div class="field-value" id="f5">https://linkedin.com/in/shrey-marwaha</div>
+            </div><div class="field field-single">
+              <div class="field-top">
+                <span class="field-label">GitHub</span>
+                <button class="copy-btn" id="btn-f6" onclick="copyField('f6')">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  Copy
+                </button>
+              </div>
+              <div class="field-value" id="f6">https://github.com/shreym95</div>
+            </div>
+            </div><div class="sidebar-section">
+              <div class="section-heading"><span class="section-icon">💼</span>Professional</div>
+              <div class="field field-single">
+              <div class="field-top">
+                <span class="field-label">Current Title</span>
+                <button class="copy-btn" id="btn-f7" onclick="copyField('f7')">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  Copy
+                </button>
+              </div>
+              <div class="field-value" id="f7">Senior Data Engineer / Project Lead</div>
+            </div><div class="field field-single">
+              <div class="field-top">
+                <span class="field-label">Current Company</span>
+                <button class="copy-btn" id="btn-f8" onclick="copyField('f8')">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  Copy
+                </button>
+              </div>
+              <div class="field-value" id="f8">Fractal Analytics</div>
+            </div><div class="field field-single">
+              <div class="field-top">
+                <span class="field-label">Years of Experience</span>
+                <button class="copy-btn" id="btn-f9" onclick="copyField('f9')">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  Copy
+                </button>
+              </div>
+              <div class="field-value" id="f9">8</div>
+            </div><div class="field field-single">
+              <div class="field-top">
+                <span class="field-label">Notice Period</span>
+                <button class="copy-btn" id="btn-f10" onclick="copyField('f10')">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  Copy
+                </button>
+              </div>
+              <div class="field-value" id="f10">90 days</div>
+            </div><div class="field field-single">
+              <div class="field-top">
+                <span class="field-label">Expected Salary</span>
+                <button class="copy-btn" id="btn-f11" onclick="copyField('f11')">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  Copy
+                </button>
+              </div>
+              <div class="field-value" id="f11">35+ LPA</div>
+            </div>
+            </div><div class="sidebar-section">
+              <div class="section-heading"><span class="section-icon">📝</span>Application Text</div>
+              <div class="field field-multi">
+              <div class="field-top">
+                <span class="field-label">Professional Summary</span>
+                <button class="copy-btn" id="btn-f12" onclick="copyField('f12')">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  Copy
+                </button>
+              </div>
+              <div class="field-value" id="f12">Senior Data Engineer with 8+ years building data pipelines on Azure &amp; On-Prem (ADF, Synapse, Databricks, Hadoop). Strong PySpark &amp; SQL. Team lead experience. Microsoft Azure and Fabric certified. Looking for Azure IC roles.</div>
+            </div><div class="field field-multi">
+              <div class="field-top">
+                <span class="field-label">Current Role — Bullets</span>
+                <button class="copy-btn" id="btn-f13" onclick="copyField('f13')">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  Copy
+                </button>
+              </div>
+              <div class="field-value" id="f13">• End-to-end pipelines on ADF + Synapse + ADLS for 10+ EU markets powering 8 Power BI reports
+• PySpark data quality framework in Databricks with automated email stakeholder reporting
+• PySpark + Airflow pipelines processing 5-10 TB payments data across 4 domains
+• 66% pipeline runtime reduction via Hive-to-Spark migration
+• Led 6-member engineering + consulting team; liaison to senior directors/VPs
+• RAG chatbot using client ecosystem; drove 20% productivity gain via AI tooling</div>
+            </div><div class="field field-multi">
+              <div class="field-top">
+                <span class="field-label">Skills (comma-sep)</span>
+                <button class="copy-btn" id="btn-f14" onclick="copyField('f14')">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  Copy
+                </button>
+              </div>
+              <div class="field-value" id="f14">PySpark, SQL, T-SQL, Spark SQL, Python, Azure Synapse, Azure Data Factory, ADLS, Databricks, Delta Lake, Microsoft Azure, Databricks, Apache Airflow, Hadoop, Hive, Presto, Shell Scripting, Git, Microsoft Fabric, Pipeline Architecture, ETL/ELT Development, Data Quality Frameworks, Performance Optimisation, Lakehouse Architecture, Unity Catalog</div>
+            </div>
+            </div><div class="sidebar-section">
+              <div class="section-heading"><span class="section-icon">🎓</span>Education & Certs</div>
+              <div class="field field-single">
+              <div class="field-top">
+                <span class="field-label">Education</span>
+                <button class="copy-btn" id="btn-f15" onclick="copyField('f15')">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  Copy
+                </button>
+              </div>
+              <div class="field-value" id="f15">B.Tech – Electronics &amp; Communication Engineering · Thapar University, Patiala · 2017</div>
+            </div><div class="field field-multi">
+              <div class="field-top">
+                <span class="field-label">Certifications</span>
+                <button class="copy-btn" id="btn-f16" onclick="copyField('f16')">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  Copy
+                </button>
+              </div>
+              <div class="field-value" id="f16">Microsoft Certified: Fabric Data Engineer Associate (DP-700)
+Microsoft Certified: Azure Data Engineer Associate (DP-203)
+Databricks Data Engineer Associate (In Progress)
+Claude Certified Architect (In Progress)</div>
+            </div>
+            </div>
+  </div>
+  <div class="main">
+    <div class="page-heading">
+      <div class="page-title">Your Job Board</div>
+      <div class="page-sub">Sorted by match score · Click "Open Job" to apply</div>
+    </div>
+    
+        <div class="card" id="card-1">
+          <div class="card-top">
+            <div class="card-left">
+              <div class="card-rank">#1</div>
+              <div>
+                <div class="card-title">Lead - Data Engineer</div>
+                <div class="card-meta">
+                  <span class="card-company">Kyndryl India</span>
+                  <span class="card-dot">·</span>
+                  <span class="card-location">Bengaluru, Karnataka, India (Hybrid)</span>
+                  <span class="chip chip-mode">Hybrid</span>
+                </div>
+              </div>
+            </div>
+            <div class="score-badge score-green" style="background:#052e16">
+              <span class="score-num">9.0</span>
+              <span class="score-den">/10</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a class="btn-primary" href="https://www.linkedin.com/jobs/view/4416508407/" target="_blank">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15,3 21,3 21,9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              Open Job
+            </a>
+          </div>
+          <details class="cl-details">
+            <summary>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+              Cover Letter
+            </summary>
+            <div class="cl-body">
+              <button class="cl-copy-btn" onclick="copyCL(1)">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                Copy
+              </button>
+              <pre id="cl-1">As a seasoned Senior Data Engineer with 8 years of experience in managing large-scale data pipelines, I am confident in my ability to lead data engineering efforts at Kyndryl India. My expertise in PySpark, Spark SQL, and Azure Synapse aligns with the role's requirements, and I am excited about the opportunity to leverage my skills to drive business growth.
+
+Notably, I have successfully led a 6-member team in managing 5-10TB payments data pipelines, demonstrating my ability to handle complex data environments. My experience in building a PySpark data quality framework, which was adopted across EU markets, showcases my capability to develop and implement scalable data solutions. Additionally, I have driven significant performance improvements by migrating legacy Synapse pipelines to Databricks, resulting in enhanced performance, discoverability, and maintainability.
+
+I would like to discuss how my technical expertise and leadership experience can contribute to Kyndryl India's data engineering initiatives. I am eager to explore this opportunity further and learn more about the team's work. Please contact me to schedule a conversation to discuss how I can make a meaningful impact at Kyndryl India.</pre>
+            </div>
+          </details>
+        </div>
+        <div class="card" id="card-2">
+          <div class="card-top">
+            <div class="card-left">
+              <div class="card-rank">#2</div>
+              <div>
+                <div class="card-title">Principal - Data Engineer</div>
+                <div class="card-meta">
+                  <span class="card-company">Fidelity Investments</span>
+                  <span class="card-dot">·</span>
+                  <span class="card-location">Bengaluru, Karnataka, India</span>
+                  <span class="chip chip-mode">Hybrid</span>
+                </div>
+              </div>
+            </div>
+            <div class="score-badge score-green" style="background:#052e16">
+              <span class="score-num">8.0</span>
+              <span class="score-den">/10</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a class="btn-primary" href="https://www.linkedin.com/jobs/view/4429819688/" target="_blank">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15,3 21,3 21,9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              Open Job
+            </a>
+          </div>
+          <details class="cl-details">
+            <summary>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+              Cover Letter
+            </summary>
+            <div class="cl-body">
+              <button class="cl-copy-btn" onclick="copyCL(2)">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                Copy
+              </button>
+              <pre id="cl-2">As a seasoned data engineer with expertise in Spark and Azure technologies, I align closely with Fidelity Investments' need for a Principal Data Engineer. My experience in migrating legacy Synapse pipelines to Databricks, improving performance, discoverability, and maintainability, makes me a strong fit for this role.
+
+With 8 years of experience in data engineering, I bring skills in PySpark, SQL, and Azure Data Factory, which have enabled me to drive significant improvements in pipeline efficiency. Notably, I achieved a 66% pipeline runtime reduction via Spark migration and built a PySpark data quality framework adopted across EU markets. My proficiency in Azure Synapse and ADLS has also allowed me to lead high-performing teams in managing large-scale data pipelines.
+
+I am excited about the opportunity to leverage my skills and experience to drive innovation and efficiency at Fidelity Investments. I would welcome the chance to discuss how my expertise can support the company's data engineering initiatives. Please contact me to arrange a conversation to explore how I can contribute to the team's success.</pre>
+            </div>
+          </details>
+        </div>
+        <div class="card" id="card-3">
+          <div class="card-top">
+            <div class="card-left">
+              <div class="card-rank">#3</div>
+              <div>
+                <div class="card-title">Data Engineer</div>
+                <div class="card-meta">
+                  <span class="card-company">Talentgigs</span>
+                  <span class="card-dot">·</span>
+                  <span class="card-location">Bengaluru, Karnataka, India</span>
+                  <span class="chip chip-mode">Hybrid</span>
+                </div>
+              </div>
+            </div>
+            <div class="score-badge score-green" style="background:#052e16">
+              <span class="score-num">8.0</span>
+              <span class="score-den">/10</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a class="btn-primary" href="https://www.linkedin.com/jobs/view/4429825323/" target="_blank">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15,3 21,3 21,9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              Open Job
+            </a>
+          </div>
+          <details class="cl-details">
+            <summary>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+              Cover Letter
+            </summary>
+            <div class="cl-body">
+              <button class="cl-copy-btn" onclick="copyCL(3)">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                Copy
+              </button>
+              <pre id="cl-3">As a seasoned data engineer with expertise in PySpark, SQL, and Azure Synapse, I am confident in my ability to drive pipeline optimization and data quality improvements. My experience in migrating legacy Synapse pipelines to Databricks, resulting in enhanced performance, discoverability, and maintainability, aligns with the role's requirements.
+
+With 8 years of experience, I have developed a strong skill set in Spark SQL, Python, and Azure Data Factory, which enables me to design and implement efficient data pipelines. Notably, I achieved a 66% pipeline runtime reduction by migrating to Spark, demonstrating my ability to optimize data processing workflows. Additionally, I built a PySpark data quality framework that was adopted across EU markets, showcasing my expertise in ensuring data accuracy and reliability.
+
+I am excited about the opportunity to leverage my skills and experience to drive data engineering excellence at Talentgigs. I would appreciate the chance to discuss how my expertise can support the company's data engineering initiatives. Please contact me to schedule a conversation to explore how I can contribute to the team's success.</pre>
+            </div>
+          </details>
+        </div>
+        <div class="card" id="card-4">
+          <div class="card-top">
+            <div class="card-left">
+              <div class="card-rank">#4</div>
+              <div>
+                <div class="card-title">Principal Data Engineer - Nexus Platform</div>
+                <div class="card-meta">
+                  <span class="card-company">First Citizens India</span>
+                  <span class="card-dot">·</span>
+                  <span class="card-location">Bengaluru, Karnataka, India</span>
+                  <span class="chip chip-mode">Hybrid</span>
+                </div>
+              </div>
+            </div>
+            <div class="score-badge score-green" style="background:#052e16">
+              <span class="score-num">8.0</span>
+              <span class="score-den">/10</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a class="btn-primary" href="https://www.linkedin.com/jobs/view/4431238489/" target="_blank">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15,3 21,3 21,9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              Open Job
+            </a>
+          </div>
+          <details class="cl-details">
+            <summary>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+              Cover Letter
+            </summary>
+            <div class="cl-body">
+              <button class="cl-copy-btn" onclick="copyCL(4)">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                Copy
+              </button>
+              <pre id="cl-4">As a seasoned data engineer with a strong background in Spark and Azure technologies, I am confident in my ability to drive the Nexus Platform forward at First Citizens India. My experience in migrating legacy Synapse pipelines to Databricks, improving performance, discoverability, and maintainability, aligns closely with the platform's goals.
+
+With 8 years of experience in designing and implementing large-scale data pipelines, I possess expertise in PySpark, SQL, and Azure Data Factory. Notably, I have successfully led a team in managing 5-10TB payments data pipelines, leveraging Spark SQL and ADLS to optimize data processing. My achievement in reducing pipeline runtime by 66% via Spark migration demonstrates my ability to drive efficiency and scalability.
+
+I am excited about the opportunity to bring my skills and experience to the Nexus Platform and contribute to its growth. I would appreciate the chance to discuss how my expertise can support the platform's objectives and drive innovation. Please contact me to schedule a meeting to explore this opportunity further.</pre>
+            </div>
+          </details>
+        </div>
+        <div class="card" id="card-5">
+          <div class="card-top">
+            <div class="card-left">
+              <div class="card-rank">#5</div>
+              <div>
+                <div class="card-title">Senior Software Engineer - Data Engineering</div>
+                <div class="card-meta">
+                  <span class="card-company">Wayfair</span>
+                  <span class="card-dot">·</span>
+                  <span class="card-location">Bengaluru, Karnataka, India (Hybrid)</span>
+                  <span class="chip chip-mode">Hybrid</span>
+                </div>
+              </div>
+            </div>
+            <div class="score-badge score-amber" style="background:#1c1400">
+              <span class="score-num">7.0</span>
+              <span class="score-den">/10</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a class="btn-primary" href="https://www.linkedin.com/jobs/view/4431481555/" target="_blank">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15,3 21,3 21,9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              Open Job
+            </a>
+          </div>
+          <details class="cl-details">
+            <summary>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+              Cover Letter
+            </summary>
+            <div class="cl-body">
+              <button class="cl-copy-btn" onclick="copyCL(5)">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                Copy
+              </button>
+              <pre id="cl-5">As a seasoned Senior Data Engineer with a strong background in Spark and Azure technologies, I'm excited to apply for the Senior Software Engineer - Data Engineering role at Wayfair, where I can leverage my expertise in PySpark, Spark SQL, and Azure Synapse to drive data engineering excellence. 
+
+With 8 years of experience in managing large-scale data pipelines, I've delivered significant performance improvements, including a 66% pipeline runtime reduction via Spark migration. My technical skills in PySpark, SQL, and T-SQL enable me to design and implement efficient data processing architectures. I've also led teams in managing multi-terabyte data pipelines, ensuring data quality and reliability.
+
+I'm confident that my experience in building a PySpark data quality framework and migrating legacy Synapse pipelines to Databricks can bring value to Wayfair's data engineering team. I'm eager to discuss how my skills and achievements align with the role's requirements and contribute to the company's data engineering initiatives. I look forward to the opportunity to meet with the hiring team to explore this further.</pre>
+            </div>
+          </details>
+        </div>
+        <div class="card" id="card-6">
+          <div class="card-top">
+            <div class="card-left">
+              <div class="card-rank">#6</div>
+              <div>
+                <div class="card-title">Data Science Engineer III</div>
+                <div class="card-meta">
+                  <span class="card-company">Sabre</span>
+                  <span class="card-dot">·</span>
+                  <span class="card-location">Bengaluru, Karnataka, India</span>
+                  <span class="chip chip-mode">Hybrid</span>
+                </div>
+              </div>
+            </div>
+            <div class="score-badge score-amber" style="background:#1c1400">
+              <span class="score-num">7.0</span>
+              <span class="score-den">/10</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a class="btn-primary" href="https://www.linkedin.com/jobs/view/4413036485/" target="_blank">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15,3 21,3 21,9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              Open Job
+            </a>
+          </div>
+          <details class="cl-details">
+            <summary>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+              Cover Letter
+            </summary>
+            <div class="cl-body">
+              <button class="cl-copy-btn" onclick="copyCL(6)">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                Copy
+              </button>
+              <pre id="cl-6">As a seasoned data engineer with expertise in PySpark, SQL, and Azure Synapse, I am confident in my ability to drive data-driven solutions at Sabre. My experience in migrating legacy pipelines to modern architectures, such as Databricks, has resulted in significant performance improvements, enhanced discoverability, and reduced maintenance costs.
+
+Notably, I have successfully led a team in managing large-scale payments data pipelines (5-10TB) and have developed a PySpark data quality framework that has been adopted across EU markets. My proficiency in Spark SQL, Python, and Azure Data Factory has enabled me to optimize pipeline runtime by 66% through strategic Spark migration.
+
+I am excited about the prospect of leveraging my skills to drive business growth at Sabre. I would appreciate the opportunity to discuss how my expertise in data engineering and pipeline optimization can support the company's goals. Please contact me to schedule a meeting to explore how I can contribute to the Data Science Engineer III role.</pre>
+            </div>
+          </details>
+        </div>
+  </div>
+</div>
+
+<script>
+function copyField(id) {
+  const el = document.getElementById(id);
+  const btn = document.getElementById('btn-' + id);
+  navigator.clipboard.writeText(el.innerText).then(() => {
+    btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg> Copied!`;
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy`;
+      btn.classList.remove('copied');
+    }, 1500);
+  });
+}
+function copyCL(i) {
+  const el = document.getElementById('cl-' + i);
+  const btn = el.previousElementSibling;
+  navigator.clipboard.writeText(el.innerText).then(() => {
+    btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg> Copied!`;
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy`;
+      btn.classList.remove('copied');
+    }, 1500);
+  });
+}
+</script>
+</body>
+</html>

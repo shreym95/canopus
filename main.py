@@ -20,6 +20,7 @@ from db.database import init_db, upsert_job, update_job, get_jobs_for_review, ge
 from agents.ranker import rank_jobs_batch
 from agents.cover_letter import generate_cover_letter
 from agents.applier import apply_to_job
+from agents.exporter import export_all_approved, export_job_board_html
 from ui.review import run_review
 
 console = Console()
@@ -170,15 +171,34 @@ async def run_apply(approved_jobs: list[dict], profile: dict, config: dict):
         cl = job.get("cover_letter") or ""
         console.print(f"[cyan]→ Applying: {job['title']} @ {job['company']} ({job['source']})[/]")
         try:
-            success = await apply_to_job(job, profile, cl, config)
-            if success:
+            result = await apply_to_job(job, profile, cl, config)
+            if result is True:
                 update_job(db_path, job["source"], job["job_id"],
                            status="applied", applied_at=datetime.now().isoformat())
                 console.print(f"  [green]✓ Applied[/]")
+            elif result == "external":
+                update_job(db_path, job["source"], job["job_id"], status="manual")
+                console.print(f"  [yellow]⚠ External ATS — apply manually: {job['url']}[/]")
             else:
                 console.print(f"  [yellow]⚠ Apply did not complete (manual check needed)[/]")
         except Exception as e:
             console.print(f"  [red]✗ Apply failed: {e}[/]")
+
+    # export cover letters as Word docs + regenerate job board
+    paths = export_all_approved(config["db"]["path"])
+    if paths:
+        console.print(f"\n[bold]Cover letter docs exported:[/]")
+        for p in paths:
+            console.print(f"  [dim]{p}[/]")
+
+
+def run_open_manual(config: dict, profile: dict | None = None):
+    import webbrowser
+    html_path = export_job_board_html(config["db"]["path"], profile=profile)
+    abs_path = Path(html_path).resolve()
+    console.print(f"[green]Job board generated:[/] {abs_path}")
+    webbrowser.open(f"file://{abs_path}")
+    console.print("[dim]Sticky sidebar: copy any ATS field instantly. Click 'Open Job →' per listing.[/]")
 
 
 def print_stats(config: dict):
@@ -194,12 +214,13 @@ async def main():
     parser.add_argument("--search",  action="store_true", help="Search job boards")
     parser.add_argument("--rank",    action="store_true", help="Rank found jobs via LLM")
     parser.add_argument("--review",  action="store_true", help="Review ranked jobs (interactive)")
-    parser.add_argument("--apply",   action="store_true", help="Apply to approved jobs")
-    parser.add_argument("--all",     action="store_true", help="Run full pipeline")
+    parser.add_argument("--apply",        action="store_true", help="Apply to approved jobs")
+    parser.add_argument("--open-manual",  action="store_true", help="Open manual ATS jobs in browser, 5 at a time")
+    parser.add_argument("--all",          action="store_true", help="Run full pipeline")
     parser.add_argument("--config",  default="config.yaml", help="Config file path")
     args = parser.parse_args()
 
-    if not any([args.search, args.rank, args.review, args.apply, args.all]):
+    if not any([args.search, args.rank, args.review, args.apply, args.open_manual, args.all]):
         parser.print_help()
         sys.exit(0)
 
@@ -243,6 +264,9 @@ async def main():
         # generate cover letters for approved jobs
         if approved:
             run_cover_letters(approved, profile, config)
+
+    if args.open_manual:
+        run_open_manual(config, profile=profile)
 
     if args.apply or args.all:
         approved_jobs = get_approved_jobs(config["db"]["path"])

@@ -1,18 +1,36 @@
 import asyncio
 from playwright.async_api import async_playwright, Page
-from .searcher.base import load_cookies, make_browser
+from .searcher.base import load_cookies, make_browser, make_persistent_context
+
+
+EASY_APPLY_RESULT = "easy_apply"
+EXTERNAL_APPLY_RESULT = "external"
+NO_APPLY_RESULT = "none"
 
 
 async def apply_linkedin(page: Page, job: dict, profile: dict, cover_letter: str) -> bool:
-    """LinkedIn Easy Apply flow."""
+    """LinkedIn Easy Apply flow. Returns True only for successful Easy Apply submission."""
     await page.goto(job["url"], timeout=20000, wait_until="domcontentloaded")
     await asyncio.sleep(2)
 
-    # click Easy Apply button
-    easy_apply_btn = await page.query_selector("button.jobs-apply-button")
+    # find Easy Apply button — LinkedIn uses obfuscated classes; match by aria-label or text
+    easy_apply_btn = None
+    for sel in ["button.jobs-apply-button", "button[aria-label*='Easy Apply']"]:
+        easy_apply_btn = await page.query_selector(sel)
+        if easy_apply_btn:
+            break
     if not easy_apply_btn:
-        print(f"[applier] no Easy Apply button: {job['url']}")
-        return False
+        # check by button text
+        for btn in await page.query_selector_all("button"):
+            txt = (await btn.inner_text() or "").strip()
+            if "easy apply" in txt.lower():
+                easy_apply_btn = btn
+                break
+
+    if not easy_apply_btn:
+        # external ATS job — print URL so user can apply manually
+        print(f"[applier] external ATS (no Easy Apply): {job['url']}")
+        return "external"
 
     await easy_apply_btn.click()
     await asyncio.sleep(2)
@@ -132,17 +150,26 @@ async def apply_to_job(job: dict, profile: dict, cover_letter: str, config: dict
         return False
 
     browser_cfg = config["browser"]
-    cookies_file = config["sources"][source]["cookies_file"]
+    src_cfg = config["sources"][source]
 
     async with async_playwright() as p:
-        browser, context = await make_browser(
-            p, headless=browser_cfg["headless"], slow_mo=browser_cfg["slow_mo"],
-            executable_path=browser_cfg.get("executable_path"),
-        )
-        await load_cookies(context, cookies_file)
-        page = await context.new_page()
-
-        success = await handler(page, job, profile, cover_letter)
-        await browser.close()
+        if "profile_dir" in src_cfg:
+            context = await make_persistent_context(
+                p, profile_dir=src_cfg["profile_dir"],
+                headless=browser_cfg["headless"], slow_mo=browser_cfg["slow_mo"],
+                executable_path=browser_cfg.get("executable_path"),
+            )
+            page = await context.new_page()
+            success = await handler(page, job, profile, cover_letter)
+            await context.close()
+        else:
+            browser, context = await make_browser(
+                p, headless=browser_cfg["headless"], slow_mo=browser_cfg["slow_mo"],
+                executable_path=browser_cfg.get("executable_path"),
+            )
+            await load_cookies(context, src_cfg["cookies_file"])
+            page = await context.new_page()
+            success = await handler(page, job, profile, cover_letter)
+            await browser.close()
 
     return success

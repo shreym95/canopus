@@ -144,7 +144,8 @@ def get_stats(db_path: str) -> dict:
             SUM(CASE WHEN status = 'rejected' THEN 1 ELSE 0 END) as rejected,
             SUM(CASE WHEN status = 'approved' THEN 1 ELSE 0 END) as approved,
             SUM(CASE WHEN status = 'applied'  THEN 1 ELSE 0 END) as applied,
-            SUM(CASE WHEN status = 'skipped'  THEN 1 ELSE 0 END) as skipped
+            SUM(CASE WHEN status = 'skipped'  THEN 1 ELSE 0 END) as skipped,
+            SUM(CASE WHEN status = 'manual'   THEN 1 ELSE 0 END) as manual
         FROM jobs
     """).fetchone()
     conn.close()
