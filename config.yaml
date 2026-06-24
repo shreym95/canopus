@@ -15,7 +15,7 @@ search:
       geo_id: "92000000"       # LinkedIn's special geo ID for worldwide remote
       work_modes: [remote]
   salary_floor_lpa: 35
-  max_jobs_per_run: 30
+  max_jobs_per_run: 100
 
 sources:
   linkedin:

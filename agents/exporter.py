@@ -78,7 +78,7 @@ def export_job_board_html(db_path: str, profile: dict | None = None, output_path
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     jobs = conn.execute(
-        "SELECT * FROM jobs WHERE status = 'manual' ORDER BY score DESC"
+        "SELECT * FROM jobs WHERE status IN ('approved', 'manual') ORDER BY score DESC"
     ).fetchall()
     conn.close()
 

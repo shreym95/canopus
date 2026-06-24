@@ -28,7 +28,7 @@ def build_search_url(keyword: str, location: str, work_mode: str, geo_id: str = 
         "keywords": keyword,
         "location": location,
         "f_TPR": "r2592000",  # last 30 days
-        "f_E": "4,5",         # seniority: Senior + Director
+        # no f_E filter — seniority tags poorly populated; keywords imply level
         "f_JT": "F",          # full-time only
         "sortBy": "DD",
     }
