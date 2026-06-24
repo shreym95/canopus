@@ -83,17 +83,24 @@ _TITLE_BLOCKLIST = {
 }
 
 
+_CLOUD_AGNOSTIC = {"azure", "databricks", "spark", "pyspark", "synapse", "fabric", "adls", "adf"}
+_AWS_GCP_ONLY   = {"aws", "amazon web services", "gcp", "google cloud", "bigquery", "redshift", "glue"}
+
+
 def _title_relevant(title: str) -> bool:
     """Return False if title clearly matches a non-DE role."""
     if not title:
-        return True  # no title yet — let ranker decide
+        return True
     t = title.lower()
-    # must contain at least one DE signal
     de_signals = ["data engineer", "data engineering", "etl", "pipeline",
                   "databricks", "spark", "azure data", "lead data", "staff data"]
     if any(s in t for s in de_signals):
+        # drop AWS/GCP-only DE roles (title explicitly says aws/gcp, no azure/databricks signal)
+        has_cloud_lock = any(c in t for c in _AWS_GCP_ONLY)
+        has_azure_signal = any(a in t for a in _CLOUD_AGNOSTIC)
+        if has_cloud_lock and not has_azure_signal:
+            return False
         return True
-    # block clear non-DE titles
     if any(s in t for s in _TITLE_BLOCKLIST):
         return False
     return True  # unknown — keep, ranker will score low

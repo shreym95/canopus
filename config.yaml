@@ -32,7 +32,7 @@ sources:
 ranker:
   model: grok-3-mini    # fast + cheap, xAI free tier
   min_score: 7          # 1-10, jobs below this are auto-rejected
-  top_n: 20             # show top N in review UI
+  top_n: 9999           # no cap — show all jobs above min_score
 
 cover_letter:
   model: grok-3-mini
