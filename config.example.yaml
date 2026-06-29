@@ -1,0 +1,47 @@
+profile:
+  resume_path: ~/Documents/Your_Resume.pdf
+  profile_path: ~/job_agent/profile.json
+
+search:
+  keywords:
+    - Senior Data Engineer
+    - Lead Data Engineer
+    - Azure Data Engineer
+    - Staff Data Engineer
+  profiles:
+    - location: "Bengaluru, Karnataka, India"
+      work_modes: [hybrid, onsite]
+    - location: "Worldwide"
+      geo_id: "92000000"       # LinkedIn's special geo ID for worldwide remote
+      work_modes: [remote]
+  salary_floor_lpa: 35
+  max_jobs_per_run: 100
+
+sources:
+  linkedin:
+    enabled: true
+    profile_dir: ~/job_agent/browser_profiles/linkedin
+    easy_apply_only: false
+  indeed:
+    enabled: false
+    cookies_file: ~/job_agent/cookies/indeed.json
+  naukri:
+    enabled: false
+    cookies_file: ~/job_agent/cookies/naukri.json
+
+ranker:
+  model: llama-3.3-70b-versatile   # Groq free tier model
+  min_score: 7                      # 1-10, jobs below this are auto-rejected
+  top_n: 9999                       # no cap — show all jobs above min_score
+
+cover_letter:
+  model: llama-3.3-70b-versatile
+  max_words: 250
+
+db:
+  path: ~/job_agent/db/jobs.db
+
+browser:
+  headless: false
+  slow_mo: 500                      # ms between actions, avoids bot detection
+  executable_path: /snap/bin/chromium   # Ubuntu snap; adjust for your OS

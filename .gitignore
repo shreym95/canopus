@@ -11,3 +11,8 @@ browser_profiles/
 
 logs/
 *.log
+
+# generated outputs — contain personal data
+config.yaml
+job_board.html
+cover_letters/
